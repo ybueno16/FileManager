@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/stat.h>
 
 void list_directory(const char *path) {
@@ -10,11 +11,11 @@ void list_directory(const char *path) {
   struct dirent *ent;
 
   if ((dir = opendir(path)) == NULL) {
-    perror("Erro ao abrir o directório");
+    perror("Error opening directory");
     return;
   }
 
-  printf("Os arquivos e diretórios em %s:\n", path);
+  printf("%s", path);
   while ((ent = readdir(dir)) != NULL) {
     if (ent->d_type == DT_DIR) {
       printf("%s/\n", ent->d_name);
@@ -36,4 +37,16 @@ int create_directory(const char *path, const char *dir_name) {
     perror("Error creating directory");
   }
   return status;
+}
+
+int remove_directory(const char *path) {
+  struct stat sb;
+  if (stat(path, &sb) == -1) {
+    perror("stat");
+    return -1;
+  }
+  if (S_ISDIR(sb.st_mode)) {
+    return rmdir(path);
+  }
+  return unlink(path);
 }
